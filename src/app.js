@@ -8,7 +8,7 @@ WorldWind.configuration = {
 var WorldWindow = require('../node_modules/web-world-wind/src/WorldWindow');
 var AtmosphereLayer = require('../node_modules/web-world-wind/src/layer/AtmosphereLayer');
 //var LocalTiledImageLayer = require('../node_modules/web-world-wind/src/layer/LocalTiledImageLayer');
-//var SingleImageLayer = require('./layer/SingleImageLayer');
+var SingleImageLayer = require('./layer/SingleImageLayer');
 var Globe3D = require('../node_modules/web-world-wind/src/globe/Globe');
 var Globe2D = require('../node_modules/web-world-wind/src/globe/Globe2D');
 var EarthElevationModel = require('../node_modules/web-world-wind/src/globe/EarthElevationModel');
@@ -34,7 +34,7 @@ document.documentElement.appendChild(container);
 var switchGlobe = new Globe2D();
 var earth = new WorldWindow('ww-canvas', new Globe3D(new ZeroElevationModel(), null));
 
-//earth.addLayer(new SingleImageLayer('day.jpg'));
+earth.addLayer(new SingleImageLayer('day.jpg'));
 //earth.addLayer(new LocalTiledImageLayer());
 earth.addLayer(new AtmosphereLayer('night.png', null));
 
