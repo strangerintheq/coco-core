@@ -22867,7 +22867,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
                     program.FRAGMODE_GROUND_PRIMARY_TEX_BLEND : program.FRAGMODE_GROUND_PRIMARY;
                 program.loadFragMode(gl, fragMode);
                 gl.blendFunc(gl.ONE, gl.ONE);
-                //terrain.renderTile(dc, currentTile);
+                terrain.renderTile(dc, currentTile);
 
                 terrain.endRenderingTile(dc, currentTile);
             }
