@@ -1,6 +1,21 @@
 // see original ../node_modules/web-world-wind/src/WorldWind
 
-module.exports = {
+WorldWind = {
+
+    /**
+     * Holds configuration parameters for World Wind. Applications may modify these parameters prior to creating
+     * their first World Wind objects. Configuration properties are:
+     * <ul>
+     *     <li><code>gpuCacheSize</code>: A Number indicating the size in bytes to allocate from GPU memory for
+     *     resources such as textures, GLSL programs and buffer objects. Default is 250e6 (250 MB).</li>
+     *     <li><code>baseUrl</code>: The URL of the directory containing the World Wind Library and its resources.</li>
+     * </ul>
+     * @type {{gpuCacheSize: number}}
+     */
+    configuration: {
+        gpuCacheSize: 250e6
+    },
+
     /**
      * The World Wind version number.
      * @default "0.0.0"
@@ -8,7 +23,6 @@ module.exports = {
      */
     VERSION: "0.0.0",
 
-    // PLEASE KEEP THE ENTRIES BELOW IN ALPHABETICAL ORDER
     /**
      * Indicates an altitude mode relative to the globe's ellipsoid.
      * @constant
@@ -202,3 +216,6 @@ module.exports = {
      */
     WEST: "west"
 };
+
+
+

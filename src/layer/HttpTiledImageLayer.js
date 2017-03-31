@@ -6,26 +6,25 @@ var Sector = require('../../node_modules/web-world-wind/src/geom/Sector');
 
 var limit = 85.05;
 
-var defaultConfig = {
-    name: 'hyb',
-    ds: 'sat,Both',
-    suffix: 'jpg',
-    server: 'localhost',
-    maxLvl: 10
-};
-
-var HttpTiledImageLayer = function (ds) {
+var HttpTiledImageLayer = function (url, ext) {
     var self = this;
 
     this.imageSize = 256;
-    this.dataset = ds || defaultConfig;
+
+    this.dataset = {
+        url: url || 'localhost/tile',
+        name: 'hyb',
+        ds: 'sat,Both',
+        suffix: ext || 'jpg',
+        maxLvl: 10
+    };
 
     MercatorTiledImageLayer.call(
         this,
         new Sector(-limit, limit, -180, 180),
         new Location(limit, 180),
         this.dataset.maxLvl,
-        'image/jpg',
+        'image/' + this.dataset.suffix,
         this.dataset.name,
         this.imageSize,
         this.imageSize
@@ -34,9 +33,9 @@ var HttpTiledImageLayer = function (ds) {
     this.displayName = 'HttpTiledImageLayer';
 
     this.urlBuilder = {
-        urlForTile: function (tile, imageFormat) {
+        urlForTile: function (tile) {
             return formatUrl (
-                self.dataset.server,
+                self.dataset.url,
                 self.dataset.ds,
                 tile.level.levelNumber + 1,
                 tile.column,
@@ -46,8 +45,13 @@ var HttpTiledImageLayer = function (ds) {
         }
     };
 
-    function formatUrl(tileServer, dataSet, level, row, col, suffix) {
-        return "http://" + tileServer + "/tile/?dataset=" + dataSet + "&z=" + level + "&x=" + row + "&y=" + col + "&suffix=." + suffix;
+    function formatUrl(url, dataSet, level, row, col, suffix) {
+        return "http://" + url +
+            "?dataset=" + dataSet +
+            "&z=" + level +
+            "&x=" + row +
+            "&y=" + col +
+            "&suffix=." + suffix;
     }
 };
 
@@ -69,10 +73,8 @@ HttpTiledImageLayer.prototype.createTopLevelTiles = function (dc) {
     ].map(function (xy) {
         return self.createTile(null, self.levels.firstLevel(), xy[0], xy[1]);
     });
-
 };
 
-// Определяет размер карты для указанного номера уровня.
 HttpTiledImageLayer.prototype.mapSizeForLevel = function (levelNumber) {
     return 256 << (levelNumber + 1);
 };

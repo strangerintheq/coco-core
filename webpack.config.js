@@ -5,7 +5,9 @@ module.exports = {
     output: {
         filename: './bin/cococore.js'
     },
-    plugins: [new webpack.optimize.UglifyJsPlugin({
-        compress: { warnings: false }
-    })]
+    // plugins: [new webpack.optimize.UglifyJsPlugin({
+    //     compress: {
+    //         warnings: false
+    //     }
+    // })]
 };
