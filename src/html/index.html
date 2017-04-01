@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Coco Web Core</title>
-    <link rel="stylesheet" href="cococore.css">
+    <style>
+        @@include('../../temp/app.css')
+    </style>
 </head>
 <body>
 
@@ -13,8 +15,12 @@
 
     <div id="controls">
         <div id="switch-globe">2D</div>
+
+        @@include('compass.html')
     </div>
 
-    <script src="cococore.js"></script>
+    <script>
+        @@include('../../temp/app.js')
+    </script>
 </body>
 </html>

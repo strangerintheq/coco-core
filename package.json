@@ -17,9 +17,12 @@
   "homepage": "https://github.com/strangerintheq/coco-core#readme",
   "description": "the coconut web core is a wrapper about nasa web worls wind",
   "dependencies": {
-    "gulp-task-builder": "git+https://github.com/strangerintheq/WebWorldWind.git#coco-core"
+    "web-world-wind": "git+https://github.com/strangerintheq/WebWorldWind.git#coco-core",
+    "free-dom": "git+https://github.com/strangerintheq/free-dom.git"
   },
   "devDependencies": {
-    "webpack": "^2.3.2"
+    "gulp-task-builder": "git+https://github.com/strangerintheq/gulp-task-builder.git",
+    "gulp": "^3.9.1",
+    "webpack-stream": "^3.2.0"
   }
 }

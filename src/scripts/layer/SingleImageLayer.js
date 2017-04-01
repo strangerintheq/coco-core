@@ -1,6 +1,6 @@
-var RenderableLayer = require("../../node_modules/web-world-wind/src/layer/RenderableLayer");
-var Sector = require("../../node_modules/web-world-wind/src/geom/Sector");
-var SurfaceImage = require("../../node_modules/web-world-wind/src/shapes/SurfaceImage");
+var RenderableLayer = require("../../../node_modules/web-world-wind/src/layer/RenderableLayer");
+var Sector = require("../../../node_modules/web-world-wind/src/geom/Sector");
+var SurfaceImage = require("../../../node_modules/web-world-wind/src/shapes/SurfaceImage");
 
 var SingleImageLayer = function (src) {
     RenderableLayer.call(this, "Single image layer");
