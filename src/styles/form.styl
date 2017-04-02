@@ -2,26 +2,27 @@ div.form
   background-color rgba(0, 0, 0, 0.5)
   border-radius 5px
   position absolute
-  //transition 200ms
   box-shadow 0 0 10px 0 lightgray
   overflow: hidden
   opacity 0
   pointer-events none
 
+div.form.form-transition
+  transition 200ms
+
 div.form.visible
   opacity 1
-  //transition 200ms
   pointer-events all
 
 .form-title
   width 100%
   position absolute
   text-align center
-  font-size 25px
+  font-size 20px
   color khaki
   cursor move
-  height 40px
-  line-height 40px
+  height 35px
+  line-height 35px
 
 .form-buttons
   position absolute
@@ -60,8 +61,6 @@ div.form-button.selected
   line-height 25px
   height 25px
 
-
-
 .form-field-title
   color white
   margin-left 10px
@@ -73,7 +72,6 @@ div.form-button.selected
   display inline-block
   margin-left 10px
   cursor default
-
 
 div.form-top-button
   position absolute
@@ -100,7 +98,6 @@ div.form-minimized
   top auto !important
   margin-top 0 !important;
   box-shadow 0 0 5px 0 gray
-
 
 div.form-minimized div.form-title
   cursor pointer !important

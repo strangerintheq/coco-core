@@ -117,18 +117,21 @@ module.exports = function(id, title) {
 
     var initX, initY, mousePressX, mousePressY;
 
-    form.addEventListener('mousedown', function(event) {
+    title.addEventListener('mousedown', function(event) {
 
-        initX = this.offsetLeft;
-        initY = this.offsetTop;
+        initX = form.offsetLeft;
+        initY = form.offsetTop;
+
+        form.classList.remove('form-transition');
 
         mousePressX = event.clientX;
         mousePressY = event.clientY;
 
-        form.addEventListener('mousemove', repositionElement, false);
+        window.addEventListener('mousemove', repositionElement, false);
 
         window.addEventListener('mouseup', function() {
-            form.removeEventListener('mousemove', repositionElement, false);
+            window.removeEventListener('mousemove', repositionElement, false);
+            form.classList.add('form-transition');
         }, false);
 
     }, false);
