@@ -1,9 +1,16 @@
 <svg id='controls-svg' viewBox="-111 -100 222 200">
 
+    <style>
+        @@include('./compass.css')
+    </style>
+
     <circle class="controls-round one"></circle>
     <circle class="controls-round two"></circle>
 
     <g id="controls-heading" transform="rotate(0)">
+
+        @@include('./globe.svg')
+
         <g id="controls-heading-knob" transform="translate(0 -80)">
             <circle class="controls-knob-circle one"></circle>
             <circle class="controls-knob-circle two"></circle>

@@ -1,12 +1,11 @@
-var globe = require('./globe');
-var compass = require('./compass');
+var events = require('./events');
 
-document.body.appendChild(compass());
+initButton("switch-globe");
 
-var switchGlobe = document.querySelector("#switch-globe");
-switchGlobe.onclick = function(){
-    globe.switchGlobe();
-    switchGlobe.innerHTML = switchGlobe.innerHTML == "2D" ? "3D" : "2D";
-};
-
-
+function initButton(id) {
+    document.querySelector("#" + id).onclick = function() {
+        events.post(events.CONTROLS, {
+            parameter: id
+        });
+    };
+}

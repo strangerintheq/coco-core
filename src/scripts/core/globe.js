@@ -1,3 +1,5 @@
+var events = require('./events');
+
 var WorldWindow = require('../../../node_modules/web-world-wind/src/WorldWindow');
 var AtmosphereLayer = require('../../../node_modules/web-world-wind/src/layer/AtmosphereLayer');
 //var HttpTiledImageLayer = require('../layer/HttpTiledImageLayer');
@@ -16,9 +18,11 @@ earth.addLayer(new SingleImageLayer('day.jpg'));
 earth.addLayer(new AtmosphereLayer('night.png'));
 earth.redraw();
 
-earth.switchGlobe = function () {
-    earth.globe = [alterGlobe, alterGlobe = earth.globe][0]; // swap globes
-    earth.redraw();
-};
+events.listen(events.CONTROLS, function (event) {
 
-module.exports = earth;
+    if (event.parameter == "switch-globe") {
+        earth.globe = [alterGlobe, alterGlobe = earth.globe][0]; // swap globes
+    }
+
+    earth.redraw();
+});

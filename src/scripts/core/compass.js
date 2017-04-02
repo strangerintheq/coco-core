@@ -1,15 +1,15 @@
 var events = require('./events');
-const dom = require('free-dom');
+var dom = require('free-dom');
 
 var startY, startAngle, dragType;
 
-const knobs = {
+var knobs = {
     heading: initKnob('heading'),
     tilt: initKnob('tilt'),
     zoom: initKnob('range')
 };
 
-const svg = dom.select('#controls-svg');
+var svg = dom.select('#controls-svg');
 
 module.exports = svg;
 
@@ -19,7 +19,7 @@ dom.select('#controls-globe').click(function() {
     events.post('rotate', {heading: 0, tilt: 0})
 });
 
-events.listen(events.NAVIGATOR_STATE_CHANGED, function(state) {
+events.listen(events.NAVIGATOR, function(state) {
 
     if (dragType) { // prevents handling of navigator changes when dragging
         return;
