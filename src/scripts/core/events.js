@@ -1,8 +1,9 @@
 var listeners = {};
 
 module.exports = {
-    CONTROLS: 'controls',
-    NAVIGATOR: 'navigator'
+    CONTROLS_CHANGED: 'controls',
+    NAVIGATOR_STATE_CHANGED: 'navigator-state-changed',
+    SWITCH_GLOBE: 'switch-globe'
 };
 
 module.exports.post = function (name, event) {

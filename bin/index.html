@@ -31,8 +31,8 @@ body {
 
 #compass {
   position: absolute;
-  width: 150px;
-  height: 150px;
+  width: 200px;
+  height: 200px;
   bottom: 0;
   margin-left: -75px;
   left: 50%;
@@ -301,7 +301,7 @@ g#controls-globe{
 /***/ function(module, exports) {
 
 	// see original ../node_modules/web-world-wind/src/WorldWind
-
+	// this global constants is used by whole web world wind engine
 	WorldWind = {
 
 	    /**
@@ -527,16 +527,14 @@ g#controls-globe{
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var events = __webpack_require__(3);
-
-	var WorldWindow = __webpack_require__(4);
-	var AtmosphereLayer = __webpack_require__(83);
+	var WorldWindow = __webpack_require__(3);
+	var AtmosphereLayer = __webpack_require__(82);
 	//var HttpTiledImageLayer = require('../layer/HttpTiledImageLayer');
-	var SingleImageLayer = __webpack_require__(88);
-	var Globe3D = __webpack_require__(50);
-	var Globe2D = __webpack_require__(58);
+	var SingleImageLayer = __webpack_require__(87);
+	var Globe3D = __webpack_require__(49);
+	var Globe2D = __webpack_require__(57);
 	//var EarthElevationModel = require('../../../node_modules/web-world-wind/src/globe/EarthElevationModel');
-	var ZeroElevationModel = __webpack_require__(60);
+	var ZeroElevationModel = __webpack_require__(59);
 
 	var mainGlobe = new Globe3D(new ZeroElevationModel(), null);
 	var alterGlobe = new Globe2D();
@@ -547,49 +545,86 @@ g#controls-globe{
 	earth.addLayer(new AtmosphereLayer('night.png'));
 	earth.redraw();
 
-	events.listen(events.CONTROLS, function (event) {
+	watch(earth.navigator, 'heading', navigatorStateChanged);
+	watch(earth.navigator, 'tilt', navigatorStateChanged);
+	watch(earth.navigator, 'range', navigatorStateChanged);
 
+	var events = __webpack_require__(91);
+
+	events.listen(events.SWITCH_GLOBE, function (event) {
 	    if (event.parameter == "switch-globe") {
 	        earth.globe = [alterGlobe, alterGlobe = earth.globe][0]; // swap globes
 	    }
-
 	    earth.redraw();
 	});
 
+
+	var rotationInterval;
+	var directions = ['up', 'down', 'left', 'right'];
+	events.listen(events.CONTROLS_CHANGED, function(state) {
+
+	    var loc = earth.navigator.lookAtLocation;
+	    var param = state.parameter;
+
+	    if (directions.indexOf(param) > -1) {
+	        handleArrow();
+	    } else {
+	        earth.navigator[param] = state.value;
+	        earth.redraw();
+	    }
+
+	    function handleArrow() {
+
+	        var amount = 0.07 * earth.navigator.range / 1e6;
+	        var sign = 'up' == param || 'right' == param ? 1 : -1;
+	        var horizontal = 'left' == param || 'right' == param;
+
+	        if (state.value) {
+	            clearInterval(rotationInterval);
+	            rotationInterval = setInterval(rotate, 25);
+	        } else {
+	            clearInterval(rotationInterval);
+	        }
+
+	        function rotate() {
+	            loc[horizontal ? 'longitude' : 'latitude'] += sign * amount;
+	            earth.redraw();
+	        }
+	    }
+	});
+
+	function navigatorStateChanged(value, parameter) {
+	    var state = {};
+	    state[parameter] = value;
+	    events.post(events.NAVIGATOR_STATE_CHANGED, state);
+	}
+
+	function watch(object, propertyName, callback) {
+
+	    var oldValue = object[propertyName];
+
+	    var newValue = oldValue;
+
+	    Object.defineProperty(object, propertyName, {
+	        get: getter,
+	        set: setter
+	    });
+
+	    function getter() {
+	        return newValue;
+	    }
+
+	    function setter(val) {
+	        oldValue = newValue;
+	        if (oldValue != val) {
+	            callback(val, propertyName);
+	        }
+	        return newValue = val;
+	    }
+	}
+
 /***/ },
 /* 3 */
-/***/ function(module, exports) {
-
-	var listeners = {};
-
-	module.exports = {
-	    CONTROLS: 'controls',
-	    NAVIGATOR: 'navigator'
-	};
-
-	module.exports.post = function (name, event) {
-	    if (listeners[name]) {
-	        listeners[name].forEach(function (listener) {
-	            try {
-	                listener(event);
-	            } catch (e) {
-	                console.error(e);
-	            }
-	        });
-	    }
-	};
-
-	module.exports.listen = function (name, listener) {
-	    if (!listeners[name]) {
-	        listeners[name] = [];
-	    }
-	    listeners[name].push(listener);
-	};
-
-
-
-/***/ },
-/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -601,24 +636,24 @@ g#controls-globe{
 	 * @version $Id: WorldWindow.js 3402 2015-08-14 17:28:09Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(64),
-	        __webpack_require__(31),
+	        __webpack_require__(7),
+	        __webpack_require__(63),
+	        __webpack_require__(30),
+	        __webpack_require__(48),
 	        __webpack_require__(49),
-	        __webpack_require__(50),
-	        __webpack_require__(58),
+	        __webpack_require__(57),
+	        __webpack_require__(60),
 	        __webpack_require__(61),
-	        __webpack_require__(62),
-	        __webpack_require__(10),
-	        __webpack_require__(5),
-	        __webpack_require__(24),
-	        __webpack_require__(65),
-	        __webpack_require__(21),
-	        __webpack_require__(32),
-	        __webpack_require__(76),
-	        __webpack_require__(78),
-	        __webpack_require__(55),
-	        __webpack_require__(25)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
+	        __webpack_require__(9),
+	        __webpack_require__(4),
+	        __webpack_require__(23),
+	        __webpack_require__(64),
+	        __webpack_require__(20),
+	        __webpack_require__(31),
+	        __webpack_require__(75),
+	        __webpack_require__(77),
+	        __webpack_require__(54),
+	        __webpack_require__(24)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              DrawContext,
 	              EarthElevationModel,
 	              FrameStatistics,
@@ -1850,7 +1885,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -1862,23 +1897,23 @@ g#controls-globe{
 	 * @version $Id: LookAtNavigator.js 3321 2015-07-16 21:34:58Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
+	        __webpack_require__(11),
+	        __webpack_require__(26),
 	        __webpack_require__(12),
-	        __webpack_require__(27),
-	        __webpack_require__(13),
-	        __webpack_require__(7),
-	        __webpack_require__(16),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(23),
 	        __webpack_require__(6),
-	        __webpack_require__(28),
+	        __webpack_require__(15),
 	        __webpack_require__(18),
-	        __webpack_require__(29),
-	        __webpack_require__(30),
-	        __webpack_require__(25),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(22),
+	        __webpack_require__(5),
+	        __webpack_require__(27),
 	        __webpack_require__(17),
-	        __webpack_require__(20)
+	        __webpack_require__(28),
+	        __webpack_require__(29),
+	        __webpack_require__(24),
+	        __webpack_require__(16),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              DragRecognizer,
 	              Frustum,
@@ -2253,7 +2288,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -2264,7 +2299,7 @@ g#controls-globe{
 	 * @exports PanRecognizer
 	 * @version $Id: PanRecognizer.js 3239 2015-06-22 23:28:12Z dcollins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function (GestureRecognizer) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function (GestureRecognizer) {
 	        "use strict";
 
 	        /**
@@ -2380,7 +2415,7 @@ g#controls-globe{
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -2392,9 +2427,9 @@ g#controls-globe{
 	 * @version $Id: GestureRecognizer.js 3241 2015-06-22 23:52:49Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(11)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(10)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Touch) {
@@ -3140,7 +3175,7 @@ g#controls-globe{
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -3151,7 +3186,7 @@ g#controls-globe{
 	 * @exports ArgumentError
 	 * @version $Id: ArgumentError.js 2631 2015-01-02 21:32:32Z tgaskins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbstractError) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbstractError) {
 	        "use strict";
 
 	        /**
@@ -3181,7 +3216,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -3229,7 +3264,7 @@ g#controls-globe{
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -3388,7 +3423,7 @@ g#controls-globe{
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -3495,7 +3530,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -3708,7 +3743,7 @@ g#controls-globe{
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -3720,10 +3755,10 @@ g#controls-globe{
 	 * @version $Id: Frustum.js 2919 2015-03-22 20:46:59Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
+	        __webpack_require__(7),
+	        __webpack_require__(13),
 	        __webpack_require__(14),
-	        __webpack_require__(15),
-	        __webpack_require__(10)
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Matrix,
 	              Plane,
@@ -4024,7 +4059,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -4037,15 +4072,15 @@ g#controls-globe{
 	 */
 
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(15),
-	        __webpack_require__(18),
-	        __webpack_require__(21),
-	        __webpack_require__(22),
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(14),
 	        __webpack_require__(17),
-	        __webpack_require__(20)
+	        __webpack_require__(20),
+	        __webpack_require__(21),
+	        __webpack_require__(16),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              Logger,
@@ -5855,7 +5890,7 @@ g#controls-globe{
 
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -5867,10 +5902,10 @@ g#controls-globe{
 	 * @version $Id: Plane.js 2935 2015-03-27 17:59:48Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(16),
-	        __webpack_require__(10),
-	        __webpack_require__(17)
+	        __webpack_require__(7),
+	        __webpack_require__(15),
+	        __webpack_require__(9),
+	        __webpack_require__(16)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Line,
 	              Logger,
@@ -6142,7 +6177,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -6154,9 +6189,9 @@ g#controls-globe{
 	 * @version $Id: Line.js 2935 2015-03-27 17:59:48Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(17)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(16)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Vec3) {
 	        "use strict";
@@ -6236,7 +6271,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 17 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -6248,8 +6283,8 @@ g#controls-globe{
 	 */
 
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(10),
-	        __webpack_require__(8)
+	        __webpack_require__(9),
+	        __webpack_require__(7)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Logger,
 	              ArgumentError) {
 	        "use strict";
@@ -6775,7 +6810,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 18 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -6787,11 +6822,11 @@ g#controls-globe{
 	 * @version $Id: Position.js 2933 2015-03-27 01:18:24Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(20)
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(18),
+	        __webpack_require__(9),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              Location,
@@ -6983,7 +7018,7 @@ g#controls-globe{
 
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -6995,12 +7030,12 @@ g#controls-globe{
 	 * @version $Id: Location.js 3116 2015-05-27 01:30:07Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(15),
-	        __webpack_require__(17),
-	        __webpack_require__(20)
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(14),
+	        __webpack_require__(16),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              Logger,
@@ -7921,7 +7956,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -7932,12 +7967,12 @@ g#controls-globe{
 	 * @version $Id: WWMath.js 3305 2015-07-07 21:55:51Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(16),
-	        __webpack_require__(10),
-	        __webpack_require__(21),
-	        __webpack_require__(17)
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(15),
+	        __webpack_require__(9),
+	        __webpack_require__(20),
+	        __webpack_require__(16)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              Line,
@@ -8711,7 +8746,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 21 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -8723,7 +8758,7 @@ g#controls-globe{
 	 * @version $Id: Rectangle.js 3174 2015-06-10 19:36:49Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(10)
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Logger) {
 	        "use strict";
 
@@ -8871,7 +8906,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 22 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -8883,9 +8918,9 @@ g#controls-globe{
 	 * @version $Id: Texture.js 3414 2015-08-20 19:09:19Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(20)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              WWMath) {
@@ -9005,7 +9040,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 23 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -9017,14 +9052,14 @@ g#controls-globe{
 	 * @version $Id: Navigator.js 3298 2015-07-06 17:28:33Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(24),
-	        __webpack_require__(18),
-	        __webpack_require__(26),
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(23),
 	        __webpack_require__(17),
-	        __webpack_require__(20)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
+	        __webpack_require__(25),
+	        __webpack_require__(16),
+	        __webpack_require__(19)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Matrix,
 	              NavigatorState,
@@ -9152,7 +9187,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 24 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -9164,15 +9199,15 @@ g#controls-globe{
 	 * @version $Id: NavigatorState.js 3279 2015-06-26 22:42:56Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
+	        __webpack_require__(7),
+	        __webpack_require__(12),
+	        __webpack_require__(15),
+	        __webpack_require__(9),
 	        __webpack_require__(13),
+	        __webpack_require__(20),
+	        __webpack_require__(24),
 	        __webpack_require__(16),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(21),
-	        __webpack_require__(25),
-	        __webpack_require__(17),
-	        __webpack_require__(20)
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Frustum,
 	              Line,
@@ -9702,7 +9737,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 25 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -9714,9 +9749,9 @@ g#controls-globe{
 	 */
 
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(10),
-	        __webpack_require__(8),
-	        __webpack_require__(17)
+	        __webpack_require__(9),
+	        __webpack_require__(7),
+	        __webpack_require__(16)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Logger,
 	              ArgumentError,
 	              Vec3) {
@@ -10025,7 +10060,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 26 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -10036,7 +10071,7 @@ g#controls-globe{
 	 * @exports UnsupportedOperationError
 	 * @version $Id: UnsupportedOperationError.js 2631 2015-01-02 21:32:32Z tgaskins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbstractError) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbstractError) {
 	        "use strict";
 
 	        /**
@@ -10068,7 +10103,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 27 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -10079,7 +10114,7 @@ g#controls-globe{
 	 * @exports DragRecognizer
 	 * @version $Id: DragRecognizer.js 3223 2015-06-19 23:16:36Z dcollins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function (GestureRecognizer) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function (GestureRecognizer) {
 	        "use strict";
 
 	        /**
@@ -10171,7 +10206,7 @@ g#controls-globe{
 
 
 /***/ },
-/* 28 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -10182,7 +10217,7 @@ g#controls-globe{
 	 * @exports PinchRecognizer
 	 * @version $Id: PinchRecognizer.js 3239 2015-06-22 23:28:12Z dcollins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function (GestureRecognizer) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function (GestureRecognizer) {
 	        "use strict";
 
 	        /**
@@ -10335,7 +10370,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 29 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -10347,8 +10382,8 @@ g#controls-globe{
 	 * @version $Id: RotationRecognizer.js 3239 2015-06-22 23:28:12Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(7)
+	        __webpack_require__(11),
+	        __webpack_require__(6)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              GestureRecognizer) {
 	        "use strict";
@@ -10505,7 +10540,7 @@ g#controls-globe{
 
 
 /***/ },
-/* 30 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -10516,7 +10551,7 @@ g#controls-globe{
 	 * @exports TiltRecognizer
 	 * @version $Id: TiltRecognizer.js 3223 2015-06-19 23:16:36Z dcollins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function (PanRecognizer) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5)], __WEBPACK_AMD_DEFINE_RESULT__ = function (PanRecognizer) {
 	        "use strict";
 
 	        /**
@@ -10620,7 +10655,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 31 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -10632,10 +10667,10 @@ g#controls-globe{
 	 * @version $Id: EarthElevationModel.js 2936 2015-03-27 22:04:59Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(19),
+	        __webpack_require__(18),
+	        __webpack_require__(31),
 	        __webpack_require__(32),
-	        __webpack_require__(33),
-	        __webpack_require__(48)
+	        __webpack_require__(47)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Location,
 	              Sector,
 	              ElevationModel,
@@ -10668,7 +10703,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 32 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -10680,12 +10715,12 @@ g#controls-globe{
 	 * @version $Id: Sector.js 2933 2015-03-27 01:18:24Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(17),
-	        __webpack_require__(20)
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(18),
+	        __webpack_require__(9),
+	        __webpack_require__(16),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              Location,
@@ -11085,7 +11120,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 33 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -11097,17 +11132,17 @@ g#controls-globe{
 	 * @version $Id: ElevationModel.js 3415 2015-08-20 19:15:57Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
+	        __webpack_require__(33),
+	        __webpack_require__(11),
+	        __webpack_require__(7),
 	        __webpack_require__(34),
-	        __webpack_require__(12),
-	        __webpack_require__(8),
 	        __webpack_require__(35),
+	        __webpack_require__(44),
+	        __webpack_require__(9),
+	        __webpack_require__(46),
+	        __webpack_require__(31),
 	        __webpack_require__(36),
-	        __webpack_require__(45),
-	        __webpack_require__(10),
-	        __webpack_require__(47),
-	        __webpack_require__(32),
-	        __webpack_require__(37),
-	        __webpack_require__(20)], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbsentResourceList,
+	        __webpack_require__(19)], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbsentResourceList,
 	              Angle,
 	              ArgumentError,
 	              ElevationImage,
@@ -11768,7 +11803,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 34 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -11904,7 +11939,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 35 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -11916,9 +11951,9 @@ g#controls-globe{
 	 * @version $Id: ElevationImage.js 2936 2015-03-27 22:04:59Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(20)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              WWMath) {
@@ -12231,7 +12266,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 36 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -12243,9 +12278,9 @@ g#controls-globe{
 	 * @version $Id: ElevationTile.js 2936 2015-03-27 22:04:59Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(37)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(36)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Tile) {
@@ -12314,7 +12349,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 37 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -12326,12 +12361,12 @@ g#controls-globe{
 	 * @version $Id: Tile.js 3125 2015-05-29 14:43:25Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(38),
-	        __webpack_require__(10),
-	        __webpack_require__(32),
-	        __webpack_require__(17),
-	        __webpack_require__(44)
+	        __webpack_require__(7),
+	        __webpack_require__(37),
+	        __webpack_require__(9),
+	        __webpack_require__(31),
+	        __webpack_require__(16),
+	        __webpack_require__(43)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              BoundingBox,
 	              Logger,
@@ -12872,7 +12907,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 38 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -12884,17 +12919,17 @@ g#controls-globe{
 	 * @version $Id: BoundingBox.js 3345 2015-07-28 20:28:35Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(40),
-	        __webpack_require__(13),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
+	        __webpack_require__(7),
 	        __webpack_require__(39),
-	        __webpack_require__(15),
-	        __webpack_require__(32),
-	        __webpack_require__(17),
-	        __webpack_require__(20),
-	        __webpack_require__(44)
+	        __webpack_require__(12),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(38),
+	        __webpack_require__(14),
+	        __webpack_require__(31),
+	        __webpack_require__(16),
+	        __webpack_require__(19),
+	        __webpack_require__(43)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              BasicProgram,
 	              Frustum,
@@ -13391,7 +13426,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 39 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -13402,7 +13437,7 @@ g#controls-globe{
 	 * @exports NotYetImplementedError
 	 * @version $Id: NotYetImplementedError.js 2631 2015-01-02 21:32:32Z tgaskins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbstractError) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbstractError) {
 	        "use strict";
 
 	        /**
@@ -13432,7 +13467,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 40 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -13444,10 +13479,10 @@ g#controls-globe{
 	 * @version $Id: BasicProgram.js 3327 2015-07-21 19:03:39Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
+	        __webpack_require__(7),
+	        __webpack_require__(40),
 	        __webpack_require__(41),
-	        __webpack_require__(42),
-	        __webpack_require__(10)
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Color,
 	              GpuProgram,
@@ -13564,7 +13599,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 41 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -13576,7 +13611,7 @@ g#controls-globe{
 	 * @version $Id: Color.js 3017 2015-04-14 17:10:31Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(10)
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Logger) {
 	        "use strict";
 
@@ -13908,7 +13943,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 42 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -13920,10 +13955,10 @@ g#controls-globe{
 	 * @version $Id: GpuProgram.js 3345 2015-07-28 20:28:35Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(41),
-	        __webpack_require__(43),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(40),
+	        __webpack_require__(42),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Color,
 	              GpuShader,
@@ -14189,7 +14224,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 43 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -14201,8 +14236,8 @@ g#controls-globe{
 	 * @version $Id: GpuShader.js 2906 2015-03-17 18:45:22Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger) {
 	        "use strict";
@@ -14286,7 +14321,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 44 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -14297,11 +14332,11 @@ g#controls-globe{
 	 * @version $Id: WWUtil.js 3402 2015-08-14 17:28:09Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(16),
-	        __webpack_require__(10),
-	        __webpack_require__(21),
-	        __webpack_require__(17)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
+	        __webpack_require__(7),
+	        __webpack_require__(15),
+	        __webpack_require__(9),
+	        __webpack_require__(20),
+	        __webpack_require__(16)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Line,
 	              Logger,
 	              Rectangle,
@@ -14563,7 +14598,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 45 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -14575,10 +14610,10 @@ g#controls-globe{
 	 * @version $Id: LevelSet.js 2952 2015-04-01 00:33:54Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(46),
-	        __webpack_require__(19),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(45),
+	        __webpack_require__(18),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Level,
 	              Location,
@@ -14739,7 +14774,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 46 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -14751,10 +14786,10 @@ g#controls-globe{
 	 * @version $Id: Level.js 2952 2015-04-01 00:33:54Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(19),
-	        __webpack_require__(10)
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(18),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              Location,
@@ -14888,7 +14923,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 47 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -14900,8 +14935,8 @@ g#controls-globe{
 	 * @version $Id: MemoryCache.js 2911 2015-03-19 18:36:01Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger) {
 	        "use strict";
@@ -15211,7 +15246,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 48 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -15223,8 +15258,8 @@ g#controls-globe{
 	 * @version $Id: WmsUrlBuilder.js 3362 2015-07-31 19:29:12Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger) {
 	        "use strict";
@@ -15391,7 +15426,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 49 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -15606,7 +15641,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 50 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -15618,19 +15653,19 @@ g#controls-globe{
 	 * @version $Id: Globe.js 2940 2015-03-30 17:58:36Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(38),
-	        __webpack_require__(33),
-	        __webpack_require__(16),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(18),
-	        __webpack_require__(51),
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(37),
 	        __webpack_require__(32),
-	        __webpack_require__(53),
+	        __webpack_require__(15),
+	        __webpack_require__(18),
+	        __webpack_require__(9),
 	        __webpack_require__(17),
-	        __webpack_require__(20)], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
+	        __webpack_require__(50),
+	        __webpack_require__(31),
+	        __webpack_require__(52),
+	        __webpack_require__(16),
+	        __webpack_require__(19)], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              BoundingBox,
 	              ElevationModel,
@@ -16229,7 +16264,7 @@ g#controls-globe{
 	;
 
 /***/ },
-/* 51 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -16240,13 +16275,13 @@ g#controls-globe{
 	 * @exports ProjectionWgs84
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(52),
-	        __webpack_require__(10),
-	        __webpack_require__(18),
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(51),
+	        __webpack_require__(9),
 	        __webpack_require__(17),
-	        __webpack_require__(20)
+	        __webpack_require__(16),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              GeographicProjection,
@@ -16525,7 +16560,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 52 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -16537,10 +16572,10 @@ g#controls-globe{
 	 * @version $Id: GeographicProjection.js 2821 2015-02-20 16:59:27Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(32),
-	        __webpack_require__(26)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(31),
+	        __webpack_require__(25)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Sector,
@@ -16757,7 +16792,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 53 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -16769,28 +16804,28 @@ g#controls-globe{
 	 * @version $Id: Tessellator.js 3345 2015-07-28 20:28:35Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(40),
-	        __webpack_require__(50),
-	        __webpack_require__(42),
-	        __webpack_require__(46),
-	        __webpack_require__(45),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(47),
-	        __webpack_require__(24),
+	        __webpack_require__(7),
 	        __webpack_require__(39),
-	        __webpack_require__(54),
+	        __webpack_require__(49),
+	        __webpack_require__(41),
+	        __webpack_require__(45),
+	        __webpack_require__(44),
 	        __webpack_require__(18),
-	        __webpack_require__(21),
-	        __webpack_require__(32),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(46),
+	        __webpack_require__(23),
+	        __webpack_require__(38),
+	        __webpack_require__(53),
+	        __webpack_require__(17),
+	        __webpack_require__(20),
+	        __webpack_require__(31),
+	        __webpack_require__(54),
 	        __webpack_require__(55),
 	        __webpack_require__(56),
-	        __webpack_require__(57),
-	        __webpack_require__(37),
-	        __webpack_require__(20),
-	        __webpack_require__(44)
+	        __webpack_require__(36),
+	        __webpack_require__(19),
+	        __webpack_require__(43)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              BasicProgram,
 	              Globe,
@@ -18295,7 +18330,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 54 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -18368,7 +18403,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 55 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -18380,9 +18415,9 @@ g#controls-globe{
 	 * @version $Id: Terrain.js 3018 2015-04-14 17:50:06Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(17)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(16)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Vec3) {
@@ -18593,7 +18628,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 56 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -18605,10 +18640,10 @@ g#controls-globe{
 	 * @version $Id: TerrainTile.js 2936 2015-03-27 22:04:59Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(37)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(36)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Matrix,
@@ -18823,7 +18858,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 57 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -18834,9 +18869,9 @@ g#controls-globe{
 	 * @exports TerrainTileList
 	 * @version $Id: TerrainTileList.js 2758 2015-02-09 00:20:46Z tgaskins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(32)
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(31)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Sector) {
@@ -18902,7 +18937,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 58 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -18914,9 +18949,9 @@ g#controls-globe{
 	 * @version $Id: Globe2D.js 3205 2015-06-17 18:05:23Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(50),
-	        __webpack_require__(59),
-	        __webpack_require__(60)
+	        __webpack_require__(49),
+	        __webpack_require__(58),
+	        __webpack_require__(59)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Globe,
 	              ProjectionEquirectangular,
 	              ZeroElevationModel) {
@@ -18941,7 +18976,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 59 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -18953,11 +18988,11 @@ g#controls-globe{
 	 * @version $Id: ProjectionEquirectangular.js 2821 2015-02-20 16:59:27Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(52),
-	        __webpack_require__(10),
-	        __webpack_require__(17)
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(51),
+	        __webpack_require__(9),
+	        __webpack_require__(16)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              GeographicProjection,
@@ -19101,7 +19136,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 60 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -19113,11 +19148,11 @@ g#controls-globe{
 	 * @version $Id: ZeroElevationModel.js 2936 2015-03-27 22:04:59Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(33),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(32)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
+	        __webpack_require__(7),
+	        __webpack_require__(32),
+	        __webpack_require__(18),
+	        __webpack_require__(9),
+	        __webpack_require__(31)], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              ElevationModel,
 	              Location,
 	              Logger,
@@ -19231,7 +19266,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 61 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -19243,10 +19278,10 @@ g#controls-globe{
 	 * @version $Id: GoToAnimator.js 3164 2015-06-09 15:35:14Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(19),
-	        __webpack_require__(10),
 	        __webpack_require__(18),
-	        __webpack_require__(17)
+	        __webpack_require__(9),
+	        __webpack_require__(17),
+	        __webpack_require__(16)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Location,
 	              Logger,
 	              Position,
@@ -19494,7 +19529,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 62 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -19506,12 +19541,12 @@ g#controls-globe{
 	 * @version $Id: GpuResourceCache.js 3023 2015-04-15 20:24:17Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(34),
-	        __webpack_require__(8),
-	        __webpack_require__(63),
-	        __webpack_require__(10),
-	        __webpack_require__(47),
-	        __webpack_require__(22)
+	        __webpack_require__(33),
+	        __webpack_require__(7),
+	        __webpack_require__(62),
+	        __webpack_require__(9),
+	        __webpack_require__(46),
+	        __webpack_require__(21)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbsentResourceList,
 	              ArgumentError,
 	              ImageSource,
@@ -19752,7 +19787,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 63 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -19764,9 +19799,9 @@ g#controls-globe{
 	 * @version $Id: ImageSource.js 3023 2015-04-15 20:24:17Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(41),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(40),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Color,
 	              Logger) {
@@ -19812,7 +19847,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 64 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -19824,32 +19859,32 @@ g#controls-globe{
 	 * @version $Id: DrawContext.js 3351 2015-07-28 22:03:20Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(41),
-	        __webpack_require__(49),
-	        __webpack_require__(66),
-	        __webpack_require__(67),
-	        __webpack_require__(13),
-	        __webpack_require__(50),
-	        __webpack_require__(42),
-	        __webpack_require__(62),
-	        __webpack_require__(70),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(24),
+	        __webpack_require__(7),
+	        __webpack_require__(40),
+	        __webpack_require__(48),
 	        __webpack_require__(65),
-	        __webpack_require__(15),
-	        __webpack_require__(18),
-	        __webpack_require__(21),
-	        __webpack_require__(71),
-	        __webpack_require__(32),
-	        __webpack_require__(76),
-	        __webpack_require__(78),
-	        __webpack_require__(80),
-	        __webpack_require__(82),
-	        __webpack_require__(25),
+	        __webpack_require__(66),
+	        __webpack_require__(12),
+	        __webpack_require__(49),
+	        __webpack_require__(41),
+	        __webpack_require__(61),
+	        __webpack_require__(69),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(23),
+	        __webpack_require__(64),
+	        __webpack_require__(14),
 	        __webpack_require__(17),
-	        __webpack_require__(20)
+	        __webpack_require__(20),
+	        __webpack_require__(70),
+	        __webpack_require__(31),
+	        __webpack_require__(75),
+	        __webpack_require__(77),
+	        __webpack_require__(79),
+	        __webpack_require__(81),
+	        __webpack_require__(24),
+	        __webpack_require__(16),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Color,
 	              FrameStatistics,
@@ -21030,7 +21065,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 65 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -21139,7 +21174,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 66 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -21151,9 +21186,9 @@ g#controls-globe{
 	 * @version $Id: FramebufferTexture.js 3345 2015-07-28 20:28:35Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(20)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger) {
 	        "use strict";
@@ -21284,7 +21319,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 67 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -21296,14 +21331,14 @@ g#controls-globe{
 	 * @version $Id: FramebufferTileController.js 3130 2015-05-29 18:20:15Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(68),
-	        __webpack_require__(45),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(47),
-	        __webpack_require__(32),
-	        __webpack_require__(37)
+	        __webpack_require__(7),
+	        __webpack_require__(67),
+	        __webpack_require__(44),
+	        __webpack_require__(18),
+	        __webpack_require__(9),
+	        __webpack_require__(46),
+	        __webpack_require__(31),
+	        __webpack_require__(36)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              FramebufferTile,
 	              LevelSet,
@@ -21539,7 +21574,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 68 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -21551,12 +21586,12 @@ g#controls-globe{
 	 * @version $Id: FramebufferTile.js 3345 2015-07-28 20:28:35Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(66),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(21),
-	        __webpack_require__(69)
+	        __webpack_require__(7),
+	        __webpack_require__(65),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(20),
+	        __webpack_require__(68)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              FramebufferTexture,
 	              Logger,
@@ -21669,7 +21704,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 69 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -21681,9 +21716,9 @@ g#controls-globe{
 	 * @version $Id: TextureTile.js 2941 2015-03-30 21:11:43Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(37)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(36)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Tile) {
@@ -21752,7 +21787,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 70 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -21764,7 +21799,7 @@ g#controls-globe{
 	 * @version $Id: Layer.js 3414 2015-08-20 19:09:19Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(10)
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Logger) {
 	        "use strict";
 
@@ -21909,7 +21944,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 71 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -21921,17 +21956,17 @@ g#controls-globe{
 	 * @version $Id: ScreenCreditController.js 3345 2015-07-28 20:28:35Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(74),
-	        __webpack_require__(41),
+	        __webpack_require__(7),
 	        __webpack_require__(73),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
+	        __webpack_require__(40),
 	        __webpack_require__(72),
-	        __webpack_require__(54),
-	        __webpack_require__(75),
-	        __webpack_require__(17),
-	        __webpack_require__(20)
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(71),
+	        __webpack_require__(53),
+	        __webpack_require__(74),
+	        __webpack_require__(16),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              BasicTextureProgram,
 	              Color,
@@ -22206,7 +22241,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 72 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -22217,7 +22252,7 @@ g#controls-globe{
 	 * @exports Offset
 	 * @version $Id: Offset.js 2958 2015-04-01 23:25:29Z tgaskins $
 	 */
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(25)
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(24)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Vec2) {
 	        "use strict";
 
@@ -22322,7 +22357,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 73 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -22334,9 +22369,9 @@ g#controls-globe{
 	 * @version $Id: Font.js 2660 2015-01-20 19:20:11Z danm $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(41),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(40),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Color,
 	              Logger) {
@@ -22511,7 +22546,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 74 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -22523,10 +22558,10 @@ g#controls-globe{
 	 * @version $Id: BasicTextureProgram.js 3327 2015-07-21 19:03:39Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
+	        __webpack_require__(7),
+	        __webpack_require__(40),
 	        __webpack_require__(41),
-	        __webpack_require__(42),
-	        __webpack_require__(10)
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Color,
 	              GpuProgram,
@@ -22803,7 +22838,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 75 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -22815,8 +22850,8 @@ g#controls-globe{
 	 * @version $Id: Renderable.js 2951 2015-03-31 23:31:08Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(10),
-	        __webpack_require__(26)
+	        __webpack_require__(9),
+	        __webpack_require__(25)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Logger,
 	              UnsupportedOperationError) {
 	        "use strict";
@@ -22877,7 +22912,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 76 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -22889,18 +22924,18 @@ g#controls-globe{
 	 * @version $Id: SurfaceShape.js 3191 2015-06-15 19:35:57Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(9),
-	        __webpack_require__(12),
 	        __webpack_require__(8),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(39),
-	        __webpack_require__(54),
-	        __webpack_require__(75),
-	        __webpack_require__(32),
-	        __webpack_require__(77),
-	        __webpack_require__(26),
-	        __webpack_require__(20)
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(18),
+	        __webpack_require__(9),
+	        __webpack_require__(38),
+	        __webpack_require__(53),
+	        __webpack_require__(74),
+	        __webpack_require__(31),
+	        __webpack_require__(76),
+	        __webpack_require__(25),
+	        __webpack_require__(19)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (AbstractError,
 	              Angle,
 	              ArgumentError,
@@ -23931,7 +23966,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 77 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -23943,8 +23978,8 @@ g#controls-globe{
 	 * @version $Id: ShapeAttributes.js 3270 2015-06-26 01:09:56Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(41),
-	        __webpack_require__(63)
+	        __webpack_require__(40),
+	        __webpack_require__(62)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Color,
 	              ImageSource) {
 	        "use strict";
@@ -24240,7 +24275,7 @@ g#controls-globe{
 	;
 
 /***/ },
-/* 78 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -24252,28 +24287,28 @@ g#controls-globe{
 	 * @version $Id: SurfaceShapeTileBuilder.js 3048 2015-04-23 23:26:47Z danm $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(64),
-	        __webpack_require__(50),
-	        __webpack_require__(42),
-	        __webpack_require__(46),
+	        __webpack_require__(7),
+	        __webpack_require__(63),
+	        __webpack_require__(49),
+	        __webpack_require__(41),
 	        __webpack_require__(45),
-	        __webpack_require__(19),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(47),
-	        __webpack_require__(24),
-	        __webpack_require__(39),
+	        __webpack_require__(44),
+	        __webpack_require__(18),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(46),
+	        __webpack_require__(23),
+	        __webpack_require__(38),
+	        __webpack_require__(53),
+	        __webpack_require__(20),
+	        __webpack_require__(31),
+	        __webpack_require__(75),
+	        __webpack_require__(78),
 	        __webpack_require__(54),
-	        __webpack_require__(21),
-	        __webpack_require__(32),
-	        __webpack_require__(76),
-	        __webpack_require__(79),
 	        __webpack_require__(55),
 	        __webpack_require__(56),
-	        __webpack_require__(57),
-	        __webpack_require__(69),
-	        __webpack_require__(37)
+	        __webpack_require__(68),
+	        __webpack_require__(36)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              DrawContext,
 	              Globe,
@@ -24790,7 +24825,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 79 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -24802,13 +24837,13 @@ g#controls-globe{
 	 * @version $Id: SurfaceShapeTile.js 3048 2015-04-23 23:26:47Z danm $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(12),
-	        __webpack_require__(8),
-	        __webpack_require__(46),
-	        __webpack_require__(10),
-	        __webpack_require__(32),
-	        __webpack_require__(22),
-	        __webpack_require__(69)
+	        __webpack_require__(11),
+	        __webpack_require__(7),
+	        __webpack_require__(45),
+	        __webpack_require__(9),
+	        __webpack_require__(31),
+	        __webpack_require__(21),
+	        __webpack_require__(68)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (Angle,
 	              ArgumentError,
 	              Level,
@@ -25083,7 +25118,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 80 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -25095,11 +25130,11 @@ g#controls-globe{
 	 * @version $Id: SurfaceTileRenderer.js 3345 2015-07-28 20:28:35Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(79),
-	        __webpack_require__(81)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(78),
+	        __webpack_require__(80)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Matrix,
@@ -25272,7 +25307,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 81 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -25284,10 +25319,10 @@ g#controls-globe{
 	 * @version $Id: SurfaceTileRendererProgram.js 3327 2015-07-21 19:03:39Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
+	        __webpack_require__(7),
+	        __webpack_require__(40),
 	        __webpack_require__(41),
-	        __webpack_require__(42),
-	        __webpack_require__(10)
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Color,
 	              GpuProgram,
@@ -25526,7 +25561,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 82 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -25538,13 +25573,13 @@ g#controls-globe{
 	 * @version $Id: TextSupport.js 3302 2015-07-06 22:20:36Z dcollins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(74),
-	        __webpack_require__(41),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(22),
-	        __webpack_require__(25)
+	        __webpack_require__(7),
+	        __webpack_require__(73),
+	        __webpack_require__(40),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(21),
+	        __webpack_require__(24)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              BasicTextureProgram,
 	              Color,
@@ -25812,7 +25847,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 83 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -25823,16 +25858,16 @@ g#controls-globe{
 	 * @exports AtmosphereLayer
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(85),
-	        __webpack_require__(70),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
+	        __webpack_require__(7),
 	        __webpack_require__(84),
-	        __webpack_require__(32),
-	        __webpack_require__(87),
-	        __webpack_require__(17),
-	        __webpack_require__(44)
+	        __webpack_require__(69),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(83),
+	        __webpack_require__(31),
+	        __webpack_require__(86),
+	        __webpack_require__(16),
+	        __webpack_require__(43)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              GroundProgram,
 	              Layer,
@@ -26149,7 +26184,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 84 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -26161,8 +26196,8 @@ g#controls-globe{
 	 */
 
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger) {
 	        "use strict";
@@ -26374,7 +26409,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 85 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -26385,7 +26420,7 @@ g#controls-globe{
 	 * @exports GroundProgram
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(86)
+	        __webpack_require__(85)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (AtmosphereProgram) {
 	        "use strict";
 
@@ -26565,7 +26600,7 @@ g#controls-globe{
 
 
 /***/ },
-/* 86 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -26576,9 +26611,9 @@ g#controls-globe{
 	 * @exports AtmosphereProgram
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(42),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(41),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              GpuProgram,
 	              Logger) {
@@ -26883,7 +26918,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 87 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -26894,7 +26929,7 @@ g#controls-globe{
 	 * @exports SkyProgram
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(86)
+	        __webpack_require__(85)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (AtmosphereProgram) {
 	        "use strict";
 
@@ -27079,12 +27114,12 @@ g#controls-globe{
 
 
 /***/ },
-/* 88 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var RenderableLayer = __webpack_require__(89);
-	var Sector = __webpack_require__(32);
-	var SurfaceImage = __webpack_require__(90);
+	var RenderableLayer = __webpack_require__(88);
+	var Sector = __webpack_require__(31);
+	var SurfaceImage = __webpack_require__(89);
 
 	var SingleImageLayer = function (src) {
 	    RenderableLayer.call(this, "Single image layer");
@@ -27097,7 +27132,7 @@ g#controls-globe{
 	module.exports = SingleImageLayer;
 
 /***/ },
-/* 89 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -27109,9 +27144,9 @@ g#controls-globe{
 	 * @version $Id: RenderableLayer.js 3334 2015-07-22 19:15:43Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(70),
-	        __webpack_require__(10)
+	        __webpack_require__(7),
+	        __webpack_require__(69),
+	        __webpack_require__(9)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Layer,
 	              Logger) {
@@ -27209,7 +27244,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 90 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -27221,10 +27256,10 @@ g#controls-globe{
 	 * @version $Id: SurfaceImage.js 3023 2015-04-15 20:24:17Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(54),
-	        __webpack_require__(91)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(53),
+	        __webpack_require__(90)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              PickedObject,
@@ -27358,7 +27393,7 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
-/* 91 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -27370,11 +27405,11 @@ g#controls-globe{
 	 * @version $Id: SurfaceTile.js 2941 2015-03-30 21:11:43Z tgaskins $
 	 */
 	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	        __webpack_require__(8),
-	        __webpack_require__(10),
-	        __webpack_require__(14),
-	        __webpack_require__(32),
-	        __webpack_require__(26)
+	        __webpack_require__(7),
+	        __webpack_require__(9),
+	        __webpack_require__(13),
+	        __webpack_require__(31),
+	        __webpack_require__(25)
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (ArgumentError,
 	              Logger,
 	              Matrix,
@@ -27431,11 +27466,47 @@ g#controls-globe{
 	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ },
+/* 91 */
+/***/ function(module, exports) {
+
+	var listeners = {};
+
+	module.exports = {
+	    CONTROLS_CHANGED: 'controls',
+	    NAVIGATOR_STATE_CHANGED: 'navigator-state-changed',
+	    SWITCH_GLOBE: 'switch-globe'
+	};
+
+	module.exports.post = function (name, event) {
+	    if (listeners[name]) {
+	        listeners[name].forEach(function (listener) {
+	            try {
+	                listener(event);
+	            } catch (e) {
+	                console.error(e);
+	            }
+	        });
+	    }
+	};
+
+	module.exports.listen = function (name, listener) {
+	    if (!listeners[name]) {
+	        listeners[name] = [];
+	    }
+	    listeners[name].push(listener);
+	};
+
+
+
+/***/ },
 /* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var events = __webpack_require__(3);
+	var events = __webpack_require__(91);
 	var dom = __webpack_require__(93);
+
+	var size = 160;
+	var half = size/2;
 
 	var startY, startAngle, dragType;
 
@@ -27455,7 +27526,7 @@ g#controls-globe{
 	    events.post('rotate', {heading: 0, tilt: 0})
 	});
 
-	events.listen(events.NAVIGATOR, function(state) {
+	events.listen(events.NAVIGATOR_STATE_CHANGED, function(state) {
 
 	    if (dragType) { // prevents handling of navigator changes when dragging
 	        return;
@@ -27466,20 +27537,20 @@ g#controls-globe{
 	    }
 
 	    if (null != state.tilt) {
-	        setTilt(state.tilt/90 * 160 - 80);
+	        setTilt(state.tilt/90 * size - half);
 	    }
 
 	    if (null != state.range) {
-	        var z = (1e5 + state.range)/20e6 * 160 - 80;
-	        if (Math.abs(z) > 80) {
-	            z = Math.sign(z) * 80;
+	        var z = (1e5 + state.range)/20e6 * size - half
+	        if (Math.abs(z) > half) {
+	            z = Math.sign(z) * half;
 	        }
 	        setZoom(z);
 	    }
 	});
 
 	function send(value, id) {
-	    events.post(events.CONTROLS, {
+	    events.post(events.CONTROLS_CHANGED, {
 	        parameter: id ? id : dragType,
 	        value: value
 	    });
@@ -27495,19 +27566,19 @@ g#controls-globe{
 	    }
 
 	    var y = startY + mouseY(e);
-	    if (Math.abs(y) > 80) {
-	        y = Math.sign(y) * 80;
+	    if (Math.abs(y) > half) {
+	        y = Math.sign(y) * half;
 	    }
 
 	    if (dragType == 'tilt') {
 	        setTilt(y);
-	        send((y + 80)/160*90);
+	        send((y + half)/size*90); //
 	        return;
 	    }
 
 	    if (dragType == 'range') {
 	        setZoom(y);
-	        send(1e5 + (y + 80)/160*20e6);
+	        send(1e5 + (y + half)/size*20e6); //
 	    }
 	}
 
@@ -27583,7 +27654,6 @@ g#controls-globe{
 	    }
 	    return offset;
 	}
-
 
 	function initArrow(arrow) {
 
@@ -27749,13 +27819,13 @@ g#controls-globe{
 /* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var events = __webpack_require__(3);
+	var events = __webpack_require__(91);
 
 	initButton("switch-globe");
 
 	function initButton(id) {
 	    document.querySelector("#" + id).onclick = function() {
-	        events.post(events.CONTROLS, {
+	        events.post(events.SWITCH_GLOBE, {
 	            parameter: id
 	        });
 	    };

@@ -1,5 +1,5 @@
 // see original ../node_modules/web-world-wind/src/WorldWind
-
+// this global constants is used by whole web world wind engine
 WorldWind = {
 
     /**

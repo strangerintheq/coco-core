@@ -1,13 +1,17 @@
 var GulpTask = require('gulp-task-builder');
 
 var dest = './bin';
+var plugins = new GulpTask('plugins').plugins;
 
 new GulpTask('scripts')
     .webpack({
         entry: "./src/scripts/app.js",
         output: {
             filename: "app.js"
-        }
+        },
+        plugins: [
+            new plugins.webpack.webpack.optimize.UglifyJsPlugin({ minimize: true })
+        ]
     })
     .temp();
 

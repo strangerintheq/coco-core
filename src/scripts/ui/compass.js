@@ -1,5 +1,8 @@
-var events = require('./events');
+var events = require('../core/events');
 var dom = require('free-dom');
+
+var size = 160;
+var half = size/2;
 
 var startY, startAngle, dragType;
 
@@ -19,7 +22,7 @@ dom.select('#controls-globe').click(function() {
     events.post('rotate', {heading: 0, tilt: 0})
 });
 
-events.listen(events.NAVIGATOR, function(state) {
+events.listen(events.NAVIGATOR_STATE_CHANGED, function(state) {
 
     if (dragType) { // prevents handling of navigator changes when dragging
         return;
@@ -30,20 +33,20 @@ events.listen(events.NAVIGATOR, function(state) {
     }
 
     if (null != state.tilt) {
-        setTilt(state.tilt/90 * 160 - 80);
+        setTilt(state.tilt/90 * size - half);
     }
 
     if (null != state.range) {
-        var z = (1e5 + state.range)/20e6 * 160 - 80;
-        if (Math.abs(z) > 80) {
-            z = Math.sign(z) * 80;
+        var z = (1e5 + state.range)/20e6 * size - half
+        if (Math.abs(z) > half) {
+            z = Math.sign(z) * half;
         }
         setZoom(z);
     }
 });
 
 function send(value, id) {
-    events.post(events.CONTROLS, {
+    events.post(events.CONTROLS_CHANGED, {
         parameter: id ? id : dragType,
         value: value
     });
@@ -59,19 +62,19 @@ function onMouseMove(e) {
     }
 
     var y = startY + mouseY(e);
-    if (Math.abs(y) > 80) {
-        y = Math.sign(y) * 80;
+    if (Math.abs(y) > half) {
+        y = Math.sign(y) * half;
     }
 
     if (dragType == 'tilt') {
         setTilt(y);
-        send((y + 80)/160*90);
+        send((y + half)/size*90); //
         return;
     }
 
     if (dragType == 'range') {
         setZoom(y);
-        send(1e5 + (y + 80)/160*20e6);
+        send(1e5 + (y + half)/size*20e6); //
     }
 }
 
@@ -147,7 +150,6 @@ function getOffset(elem, offsetParam) {
     }
     return offset;
 }
-
 
 function initArrow(arrow) {
 
