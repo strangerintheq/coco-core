@@ -1,0 +1,110 @@
+div.form
+  background-color rgba(0, 0, 0, 0.5)
+  border-radius 5px
+  position absolute
+  //transition 200ms
+  box-shadow 0 0 10px 0 lightgray
+  overflow: hidden
+  opacity 0
+  pointer-events none
+
+div.form.visible
+  opacity 1
+  //transition 200ms
+  pointer-events all
+
+.form-title
+  width 100%
+  position absolute
+  text-align center
+  font-size 25px
+  color khaki
+  cursor move
+  height 40px
+  line-height 40px
+
+.form-buttons
+  position absolute
+  bottom 7px
+  right 7px
+  text-align right
+
+div.form-button
+  width 119px
+  color lightgray
+  display inline-block
+  margin 5px
+  height 25px
+  line-height 25px
+  text-align center
+  cursor pointer
+  transition 100ms
+  border-radius 3px
+  background-color rgba(0, 0, 0, 0.3)
+  box-shadow 0 0 5px 0 lightgray
+
+div.form-button:hover
+  box-shadow 0 0 10px 0 white
+  transition 200ms
+  background-color rgba(0, 0, 0, 0.1)
+
+div.form-button.selected
+  color wheat
+  transition 300ms
+
+.form-content
+  position absolute
+  top 40px
+
+.form-field
+  line-height 25px
+  height 25px
+
+
+
+.form-field-title
+  color white
+  margin-left 10px
+  display inline-block
+  cursor default
+
+.form-field-value
+  color wheat
+  display inline-block
+  margin-left 10px
+  cursor default
+
+
+div.form-top-button
+  position absolute
+  top 5px
+  right 5px
+  box-shadow 0 0 5px 0 lightgray
+  width 21px
+  height 21px
+  cursor pointer
+  margin 2px
+  border-radius 5px
+  transition 300ms
+
+div.form-top-button:hover
+  transition 300ms
+  box-shadow 0 0 10px 0 white
+
+div.form-minimized
+  height 40px !important
+  width 150px !important
+  border-radius 0
+  transition 300ms
+  bottom 30px !important
+  top auto !important
+  margin-top 0 !important;
+  box-shadow 0 0 5px 0 gray
+
+
+div.form-minimized div.form-title
+  cursor pointer !important
+
+div.form-minimized:hover
+  box-shadow 0 0 10px 0 lightgray
+  transition 300ms

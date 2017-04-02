@@ -3,7 +3,11 @@ var listeners = {};
 module.exports = {
     CONTROLS_CHANGED: 'controls',
     NAVIGATOR_STATE_CHANGED: 'navigator-state-changed',
-    SWITCH_GLOBE: 'switch-globe'
+    SWITCH_GLOBE: 'switch-globe',
+    ROTATE_TO: 'rotate-to',
+    SHOW_FORM: 'show-form',
+    HIDE_FORM: 'hide-form',
+    TOGGLE_FORM: 'toggle-form'
 };
 
 module.exports.post = function (name, event) {

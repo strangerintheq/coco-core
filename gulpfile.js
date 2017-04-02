@@ -10,7 +10,7 @@ new GulpTask('scripts')
             filename: "app.js"
         },
         plugins: [
-            new plugins.webpack.webpack.optimize.UglifyJsPlugin({ minimize: true })
+            // new plugins.webpack.webpack.optimize.UglifyJsPlugin({ minimize: true })
         ]
     })
     .temp();

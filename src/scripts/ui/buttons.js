@@ -1,11 +1,9 @@
 var events = require('../core/events');
 
-initButton("switch-globe");
+document.querySelector("#switch-globe").onclick = function() {
+    events.post(events.SWITCH_GLOBE);
+};
 
-function initButton(id) {
-    document.querySelector("#" + id).onclick = function() {
-        events.post(events.SWITCH_GLOBE, {
-            parameter: id
-        });
-    };
-}
+document.querySelector("#settings").onclick = function() {
+    events.post(events.TOGGLE_FORM, "form-settings");
+};

@@ -22,13 +22,10 @@ watch(earth.navigator, 'range', navigatorStateChanged);
 
 var events = require('./events');
 
-events.listen(events.SWITCH_GLOBE, function (event) {
-    if (event.parameter == "switch-globe") {
-        earth.globe = [alterGlobe, alterGlobe = earth.globe][0]; // swap globes
-    }
+events.listen(events.SWITCH_GLOBE, function () {
+    earth.globe = [alterGlobe, alterGlobe = earth.globe][0]; // swap globes
     earth.redraw();
 });
-
 
 var rotationInterval;
 var directions = ['up', 'down', 'left', 'right'];
@@ -62,6 +59,10 @@ events.listen(events.CONTROLS_CHANGED, function(state) {
             earth.redraw();
         }
     }
+});
+
+events.listen(events.ROTATE_TO, function (state) {
+
 });
 
 function navigatorStateChanged(value, parameter) {

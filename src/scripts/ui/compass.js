@@ -19,7 +19,7 @@ module.exports = svg;
 dom.all('path.arrow').forEach(initArrow);
 
 dom.select('#controls-globe').click(function() {
-    events.post('rotate', {heading: 0, tilt: 0})
+    events.post(events.ROTATE_TO, {heading: 0, tilt: 0})
 });
 
 events.listen(events.NAVIGATOR_STATE_CHANGED, function(state) {
