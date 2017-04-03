@@ -59,6 +59,8 @@ module.exports = function(id, title) {
     form.addMinimizeButton = function(component){
 
         var minimize = dom.div('form-top-button').click(function() {
+            form.oldLeft = form.offsetLeft;
+            form.style.left = (dom.all('.form-minimized').length * 160) + 10 + 'px';
             form.classList.add('form-minimized');
             minimize.classList.add('hidden');
             if (component) {
@@ -67,11 +69,21 @@ module.exports = function(id, title) {
         }).appendTo(form).append(createMinimizeSvg());
 
         title.click(function() {
+            if (!form.classList.contains('form-minimized')) {
+                return;
+            }
             form.classList.remove('form-minimized');
             minimize.classList.remove('hidden');
             if (component) {
                 component.classList.remove('hidden');
             }
+            dom.all('.form-minimized').forEach(function(f) {
+                if (f.offsetLeft > form.offsetLeft) {
+                    var l = f.offsetLeft - 160;
+                    f.style.left = l + 'px';
+                }
+            });
+            form.style.left = form.oldLeft + 'px';
         });
 
         return form;
@@ -116,8 +128,12 @@ module.exports = function(id, title) {
 
 
     var initX, initY, mousePressX, mousePressY;
-
+    var padding = 10;
     title.addEventListener('mousedown', function(event) {
+
+        if (form.classList.contains('form-minimized')){
+            return;
+        }
 
         initX = form.offsetLeft;
         initY = form.offsetTop;
@@ -136,9 +152,28 @@ module.exports = function(id, title) {
 
     }, false);
 
+    window.addEventListener('resize', function() {
+        adjustLeft(form.offsetLeft);
+        adjustBottom(window.innerHeight - form.offsetTop - form.offsetHeight);
+    });
+
+    function adjustLeft(left) {
+        var maxLeft = window.innerWidth - padding - form.offsetWidth;
+        left = left > maxLeft ? maxLeft : left;
+        left = left < padding ? padding : left;
+        form.style.left = left + 'px';
+    }
+
+    function adjustBottom(bottom) {
+        var maxBottom = window.innerHeight - padding - form.offsetHeight;
+        bottom = bottom > maxBottom ? maxBottom : bottom;
+        bottom = bottom < padding ? padding : bottom;
+        form.style.bottom = bottom + 'px';
+    }
+
     function repositionElement(event) {
-        form.style.left = initX + event.clientX - mousePressX + 'px';
-        form.style.top = initY + event.clientY - mousePressY + 'px';
+        adjustLeft(initX + event.clientX - mousePressX);
+        adjustBottom(window.innerHeight - (initY + event.clientY - mousePressY) - form.offsetHeight);
     }
 
     return form;

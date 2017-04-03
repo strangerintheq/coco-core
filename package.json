@@ -1,28 +1,18 @@
 {
   "name": "coco-core",
   "version": "0.0.1",
-  "main": "",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/strangerintheq/coco-core.git"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/strangerintheq/coco-core/issues"
-  },
-  "homepage": "https://github.com/strangerintheq/coco-core#readme",
-  "description": "the coconut web core is a wrapper about nasa web worls wind",
+
   "dependencies": {
     "web-world-wind": "git+https://github.com/strangerintheq/WebWorldWind.git#coco-core",
     "free-dom": "git+https://github.com/strangerintheq/free-dom.git"
   },
+
   "devDependencies": {
-    "gulp-task-builder": "git+https://github.com/strangerintheq/gulp-task-builder.git",
-    "gulp": "^3.9.1",
-    "webpack-stream": "^3.2.0"
+    "gulp-task-builder": "git+https://github.com/strangerintheq/gulp-task-builder.git"
   }
 }

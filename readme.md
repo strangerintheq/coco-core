@@ -1,7 +1,9 @@
+requirements:
+- nodejs runtime
+
 configure:
-> npm install webpack -g
-> npm install [ENTER]
+> npm update [ENTER]
 
 build:
-> webpack [ENTER]
+> gulp [ENTER]
 

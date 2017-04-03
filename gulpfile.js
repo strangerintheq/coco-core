@@ -1,36 +1,35 @@
-var GulpTask = require('gulp-task-builder');
+var TaskBuilder = require('gulp-task-builder');
+var regexStrip = require('./strip');
+var removeEmptyLines = require('gulp-remove-empty-lines');
 
-var dest = './bin';
-var plugins = new GulpTask('plugins').plugins;
-
-new GulpTask('scripts')
-    .webpack({
-        entry: "./src/scripts/app.js",
-        output: {
-            filename: "app.js"
-        },
-        plugins: [
-            // new plugins.webpack.webpack.optimize.UglifyJsPlugin({ minimize: true })
-        ]
-    })
+TaskBuilder.task('scripts')
+    .webpack('scripts/app.js', false)
+    //.subTask(regexStrip({
+    //    ifThrow: /(^|\s+|[^a-zA-Z])if\s*\([^)]+\)\s*{\s*throw\s+new\s+[^}]+}/,
+    //    comment: /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm
+    //}))
+    .subTask(removeEmptyLines())
     .temp();
 
-new GulpTask('styles')
-    .src('src/styles/**')
+TaskBuilder.task('styles')
+    .src('styles/**')
     .stylus()
     .concatCss('app.css')
     .temp();
 
-new GulpTask('resources')
-    .src('src/resources/**')
-    .dest(dest);
+TaskBuilder.task('resources')
+    .src('resources/**')
+    .dest();
 
-new GulpTask('default')
+TaskBuilder
+    .task('default')
     .depends([
         'scripts',
         'styles',
         'resources'
     ])
-    .src('src/html/index.html')
+    .src('html/index.html')
     .fileinclude()
-    .dest(dest);
+    .dest();
+
+
