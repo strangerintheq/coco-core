@@ -1,11 +1,10 @@
 var TaskBuilder = require('gulp-task-builder');
 var regexStrip = require('./strip');
-var removeEmptyLines = require('gulp-remove-empty-lines');
 
 TaskBuilder.task('scripts')
     .webpack('scripts/app.js', true)
     .subTask(regexStrip({
-        ifThrow: /(^|\s+|[^a-zA-Z])if\s*\([^)]+\)\s*{\s*throw\s+new\s+[^}]+}/,
+       // ifThrow: /(^|\s+|[^a-zA-Z])if\s*\([^)]+\)\s*{\s*throw\s+new\s+[^}]+}/,
         //comment: /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm
     }))
     .temp();
@@ -28,8 +27,8 @@ TaskBuilder
         'resources'
     ])
     .src('html/index.html')
-    .fileinclude()
-    .subTask(removeEmptyLines())
+    .fileInclude()
+    .removeEmptyLines()
     .dest();
 
 

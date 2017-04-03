@@ -4,55 +4,55 @@
         @@include('./compass.css')
     </style>
 
-    <circle class="controls-round one"></circle>
-    <circle class="controls-round two"></circle>
+    <circle class="controls-round one"/>
+    <circle class="controls-round two"/>
 
     <g id="controls-heading" transform="rotate(0)">
 
         @@include('./globe.svg')
 
         <g id="controls-heading-knob" transform="translate(0 -80)">
-            <circle class="controls-knob-circle one"></circle>
-            <circle class="controls-knob-circle two"></circle>
-            <path class="controls-knob-text" d="M-4,6 L-3,-4 L3,4 L4,-6"></path>
-            <circle class="controls-knob-active-area"></circle>
+            <circle class="controls-knob-circle one"/>
+            <circle class="controls-knob-circle two"/>
+            <path class="controls-knob-text" d="M-4,6 L-3,-4 L3,4 L4,-6"/>
+            <circle class="controls-knob-active-area"/>
         </g>
 
-        <path id='controls-up-button' d="M-20,-35 L0,-63 L20,-35" class="arrow one"></path>
-        <path id='controls-up-button' d="M-20,-35 L0,-63 L20,-35" class="arrow two"></path>
+        <path id='controls-up-button' d="M-20,-35 L0,-63 L20,-35" class="arrow one"/>
+        <path id='controls-up-button' d="M-20,-35 L0,-63 L20,-35" class="arrow two"/>
 
-        <path id='controls-down-button' d="M-20,-35 L0,-63 L20,-35" class="arrow one" transform="rotate(180)"></path>
-        <path id='controls-down-button' d="M-20,-35 L0,-63 L20,-35" class="arrow two" transform="rotate(180)"></path>
+        <path id='controls-down-button' d="M-20,-35 L0,-63 L20,-35" class="arrow one" transform="rotate(180)"/>
+        <path id='controls-down-button' d="M-20,-35 L0,-63 L20,-35" class="arrow two" transform="rotate(180)"/>
 
-        <path id='controls-left-button' d="M-20,-35 L0,-63 L20,-35" class="arrow one" transform="rotate(270)"></path>
-        <path id='controls-left-button' d="M-20,-35 L0,-63 L20,-35" class="arrow two" transform="rotate(270)"></path>
+        <path id='controls-left-button' d="M-20,-35 L0,-63 L20,-35" class="arrow one" transform="rotate(270)"/>
+        <path id='controls-left-button' d="M-20,-35 L0,-63 L20,-35" class="arrow two" transform="rotate(270)"/>
 
-        <path id='controls-right-button' d="M-20,-35 L0,-63 L20,-35" class="arrow one" transform="rotate(90)"></path>
-        <path id='controls-right-button' d="M-20,-35 L0,-63 L20,-35" class="arrow two" transform="rotate(90)"></path>
+        <path id='controls-right-button' d="M-20,-35 L0,-63 L20,-35" class="arrow one" transform="rotate(90)"/>
+        <path id='controls-right-button' d="M-20,-35 L0,-63 L20,-35" class="arrow two" transform="rotate(90)"/>
 
     </g>
 
     <g id="controls-tilt">
-        <path d="M-100,-80 L-100,80" class="track one"></path>
-        <path d="M-100,-80 L-100,80" class="track two"></path>
+        <path d="M-100,-80 L-100,80" class="track one"/>
+        <path d="M-100,-80 L-100,80" class="track two"/>
 
         <g id="controls-tilt-knob" transform="translate(-100 -80)">
-            <circle class="controls-knob-circle one"></circle>
-            <circle class="controls-knob-circle two"></circle>
-            <path class="controls-knob-text" d="M-5,-4 L5,-4 M0,-4 L0,6"></path>
-            <circle class="controls-knob-active-area"></circle>
+            <circle class="controls-knob-circle one"/>
+            <circle class="controls-knob-circle two"/>
+            <path class="controls-knob-text" d="M-5,-4 L5,-4 M0,-4 L0,6"/>
+            <circle class="controls-knob-active-area"/>
         </g>
     </g>
 
     <g id="controls-range">
-        <path d="M100,-80 L100,80" class="track one"></path>
-        <path d="M100,-80 L100,80" class="track two"></path>
+        <path d="M100,-80 L100,80" class="track one"/>
+        <path d="M100,-80 L100,80" class="track two"/>
 
         <g id="controls-range-knob" transform="translate(100 0)">
-            <circle class="controls-knob-circle one"></circle>
-            <circle class="controls-knob-circle two"></circle>
-            <path class="controls-knob-text" d="M-5,-4 L4,-4 L-4,4 L5,4"></path>
-            <circle class="controls-knob-active-area"></circle>
+            <circle class="controls-knob-circle one"/>
+            <circle class="controls-knob-circle two"/>
+            <path class="controls-knob-text" d="M-5,-4 L4,-4 L-4,4 L5,4"/>
+            <circle class="controls-knob-active-area"/>
         </g>
     </g>
 
