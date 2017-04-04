@@ -3,11 +3,12 @@ var regexStrip = require('./strip');
 var removeEmptyLines = require('gulp-remove-empty-lines');
 
 TaskBuilder.task('scripts')
-    .webpack('scripts/app.js', true)
-    .subTask(regexStrip({
-        ifThrow: /(^|\s+|[^a-zA-Z])if\s*\([^)]+\)\s*{\s*throw\s+new\s+[^}]+}/,
-        //comment: /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm
-    }))
+    .webpack('scripts/app.js', false)
+    //.subTask(regexStrip({
+    //    ifThrow: /(^|\s+|[^a-zA-Z])if\s*\([^)]+\)\s*{\s*throw\s+new\s+[^}]+}/,
+    //    comment: /\/\*[\s\S]*?\*\/|([^"\\:]|^)\/\/.*$/gm,
+    //    fixElse: /else\s*else/
+    //}))
     .temp();
 
 TaskBuilder.task('styles')
@@ -29,7 +30,7 @@ TaskBuilder
     ])
     .src('html/index.html')
     .fileinclude()
-    .subTask(removeEmptyLines())
+    //.subTask(removeEmptyLines())
     .dest();
 
 
